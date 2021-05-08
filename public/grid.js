@@ -21,6 +21,14 @@ const Grid = {
         this.innited = true;
     },
 
+    click(x, y) {
+        x /= this.cellSize;
+        y /= this.cellSize;
+        [x, y] = [x, y].map(Math.floor);
+
+        this.cells[x][y].mark();
+    },
+
     show() {
         for (const column of this.cells) {
             for (const cell of column) {

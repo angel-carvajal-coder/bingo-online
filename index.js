@@ -9,6 +9,7 @@ let minPlayers = 2;
 
 app.use(express.static('public'));
 
+let generateNextNumber = generateGenerateNextNumber();
 
 io.on('connection', socket => {
     console.log("client connected")
@@ -22,12 +23,16 @@ io.on('connection', socket => {
         io.emit('ready');
     }
 
+    readyForNextNumber[socket.id] = false;
+
     socket.on('disconnect', () => {
         console.log("client disconnected")
         players = players.filter(x => x !== socket.id);
+        delete readyForNextNumber[socket.id];
 
         if (players.length < minPlayers) {
             io.emit('player-disconnect');
+            generateNextNumber = generateGenerateNextNumber();
         }
     });
 
@@ -45,8 +50,30 @@ io.on('connection', socket => {
             io.emit('player-disconnect');
         }
     });
+
 });
 
+setInterval(() => {
+    if (players.length >= minPlayers)
+        io.emit('next-number', generateNextNumber())
+}, 5000);
+
+let readyForNextNumber = Object.create(null);
 server.listen(80, '0.0.0.0', () => {
     console.log('listening');
 });
+
+function generateGenerateNextNumber() {
+    const generatedNumbers = [];
+
+    return function generateNextNumber() {
+        let generated;
+        do {
+            generated = Math.ceil(Math.random() * 99);
+        } while (generatedNumbers.includes(generated));
+
+        generatedNumbers.push(generated);
+
+        return generated;
+    };
+}

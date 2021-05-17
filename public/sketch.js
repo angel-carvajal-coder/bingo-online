@@ -5,6 +5,7 @@ const socket = io();
 let grid;
 let speech;
 let ready = false;
+let isFirstFrame = true;
 
 function setup() {
     createCanvas(cellSize * columns, cellSize * rows);//.parent('center');
@@ -40,12 +41,33 @@ function setup() {
     socket.on('ready', () => {
         ready = true;
         waitingP.html('');
+        const previousBoard = sessionStorage.getItem('board');
+        if (previousBoard) {
+            grid.restore(JSON.parse(previousBoard));
+        }
     });
 
     socket.on('player-disconnect', () => {
         waitingP.html('Esperando a otro jugador...');
-        grid = Object.create(Grid);
+        sessionStorage.removeItem('board');
+        location.reload();
     });
+
+    createChat(socket);
+
+    if (localStorage.getItem('name') == null)
+        localStorage.setItem('name', prompt('¿Cómo te llamas?'));
+    socket.emit('player-name', localStorage.getItem('name'));
+
+    createSpan(`\t(${localStorage.getItem('name')})`)
+        .parent(select('h2'));
+
+    const previousBoard = sessionStorage.getItem('board');
+    if (previousBoard) {
+        grid.restore(JSON.parse(previousBoard));
+    } else {
+        sessionStorage.setItem('board', JSON.stringify(grid))
+    }
 }
 
 function mousePressed() {
@@ -55,7 +77,10 @@ function mousePressed() {
 function draw() {
     background(0);
     if (ready) {
-        grid[Grid.initFunction](columns, rows, cellSize);
+        if (isFirstFrame) {
+            grid[Grid.initFunction](columns, rows, cellSize);
+            isFirstFrame = false;
+        }
 
         grid.show();
     }

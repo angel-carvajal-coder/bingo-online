@@ -1,0 +1,21 @@
+[ ] 5 números en cada línea
+[X] Que se sepa que el chat es el chat
+[X] Que salgan los mensajes debajo del botón
+[ ] Que se eliminen mensajes viejos
+[ ] Chat de voz (es decir: la razón por 
+ |  la que he cambiado a HTTPS)
+ |
+ \--- [ ] Relacionado: un modo que use reconocimiento de
+	  voz para enviar texto a través del chat de voz
+	  y gastar menos ancho de banda
+
+[X] Introducir el nombre del jugador al principio y
+    que luego salga en el chat
+
+[X] Que ponga quién eres al lado del <h2>
+
+[ ] Que salga un botón "Cartón" y que
+	 cuando lo presiones salga el cartón y un 
+	 botón de iniciar partida
+
+[ ] Que no se actualize el cartón al actualizar la página

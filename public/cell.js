@@ -1,26 +1,32 @@
 const Cell = {
     initFunction: "init",
     
-    init(x, y, w) {
+    init(x, y, w, shouldHaveNumber, number) {
         this.x = x;
         this.y = y;
         this.size = w;
         this.number = null;
         this.marked = true;
 
-        // 1/3 chance
-        if (random(1) < 0.33) {
+        if (shouldHaveNumber) {
             do {
                 this.number = x * 10 + floor(random(0, 10));
             } while (this.number === 0);
 
-            this.marked = false;
+            this.mark(false);
 
+        } else if (number != null) {
+            this.number = number;
+            this.mark(false);
         }
     },
 
-    mark() {
-        this.marked = true;
+    mark(m=true) {
+        this.marked = m;
+    },
+
+    toJSON() {
+        return this.number;
     },
 
     show() {

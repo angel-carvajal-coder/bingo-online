@@ -1,11 +1,22 @@
 const express = require('express');
 const { Server } = require('socket.io');
-const http = require('http');
+const http = require('https');
+const fs = require('fs')
+
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
 let players = [];
 let minPlayers = 2;
+
+const key = fs.readFileSync(__dirname + '/selfsigned.key');
+const cert = fs.readFileSync(__dirname + '/selfsigned.crt');
+const options = {
+    key,
+    cert
+};
+
+const server = http.createServer(options, app);
+const io = new Server(server);
+const names = Object.create(null);
 
 app.use(express.static('public'));
 
@@ -16,8 +27,13 @@ io.on('connection', socket => {
 
     players.push(socket.id);
 
-    setTimeout(() =>
-        io.emit('min-players', minPlayers), 50);
+    socket.on('player-name', playerName => {
+        names[socket.id] = playerName;
+    });
+
+    setTimeout(() => {
+        io.emit('min-players', minPlayers);
+    }, 50);
 
     if (players.length >= minPlayers) {
         io.emit('ready');
@@ -28,7 +44,6 @@ io.on('connection', socket => {
     socket.on('disconnect', () => {
         console.log("client disconnected")
         players = players.filter(x => x !== socket.id);
-        delete readyForNextNumber[socket.id];
 
         if (players.length < minPlayers) {
             io.emit('player-disconnect');
@@ -36,11 +51,15 @@ io.on('connection', socket => {
         }
     });
 
+    socket.on('message', text => 
+        io.emit('message', {name: names[socket.id], text})
+    );
+
     socket.on('min-player-change', x => {
         console.log(`minPlayers = ${x}`);
         minPlayers = x;
 
-        socket.broadcast.emit('min-players', minPlayers);
+        io.emit('min-players', minPlayers);
 
         if (players.length >= minPlayers) {
             io.emit('ready');
@@ -59,7 +78,7 @@ setInterval(() => {
 }, 5000);
 
 let readyForNextNumber = Object.create(null);
-server.listen(80, '0.0.0.0', () => {
+server.listen(443, '0.0.0.0', () => {
     console.log('listening');
 });
 
